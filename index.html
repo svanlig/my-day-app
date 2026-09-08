@@ -33,48 +33,49 @@
             <section id="pursuits" class="page"><div class="head"><div><small>DAILY PURSUITS</small><h2>Things I aim to do</h2></div><button id="addPursuit">+ Add pursuit</button></div><p class="intro">Productive things you want to do when you have spare time, separate from chores and scheduled tasks.</p><div id="pursuitList"></div></section>
             <section id="challenges" class="page"><div class="head"><div><small>PERSONAL CHALLENGES</small><h2>Challenges</h2></div><button id="addChallenge">+ Add challenge</button></div><p class="intro">Set a beginning and end, check in each day, add comments, and record your final accomplishment.</p><div id="activeChallenges"></div><div class="sub">COMPLETED CHALLENGES</div><div id="completedChallenges"></div></section>
             <section id="history" class="page"><div class="head"><div><small>HISTORY</small><h2 id="historyTitle"></h2></div><div><button id="prev">←</button><button id="next">→</button></div></div><div class="picker">Go to date <input type="date" id="historyDate"></div><div id="historyContent"></div></section>
-           <section id="reminders" class="page">
-              <div class="head">
-                <div><small>REMINDERS</small><h2>Your lists</h2></div>
-              </div>
-            <p class="intro">Manage your todos, groceries, and ideas in one place.</p>
+            <section id="reminders" class="page">
+                <div class="head">
+                    <div><small>REMINDERS</small><h2>Things I Need to Remember</h2></div>
+                </div>
+                <p class="intro">Add something to do, something to buy or a new idea. It will dissapear when the task is completed.</p>
 
-            <!-- TODO SECTION -->
-              <div class="list-section">
-                <div class="list-header">
-                  <h3>To Do</h3>
-                      <div class="add-row">
-                        <input type="text" id="todoInput" placeholder="Add todo item..." style="flex:1; padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
-                        <button onclick="addItem('todo')" style="padding:6px 15px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">Add</button>
-              </div>
-              </div>
-                <div id="todoList"></div>
-              </div>
+                <!-- TODO SECTION -->
+                <div class="list-section">
+                    <div class="list-header">
+                        <h2>To Do</h2>
+                        <div class="add-row">
+                            <button id="quicktodo">+ To Do</button>
 
-            <!-- GROCERIES SECTION -->
-              <div class="list-section">
-                <div class="list-header">
-                  <h3>🛒 Groceries</h3>
-                      <div class="add-row">
-            <input type="text" id="groceryInput" placeholder="Add grocery item..." style="flex:1; padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
-        <button onclick="addItem('grocery')" style="padding:6px 15px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">Add</button>
-      </div>
-    </div>
-    <div id="groceryList"></div>
-  </div>
+                     </div>
+                    </div>
+                    </div>
+                    <div id="todoList"></div>
+                </div>
 
-  <!-- IDEAS SECTION -->
-  <div class="list-section">
-    <div class="list-header">
-      <h3>💡 Ideas</h3>
-      <div class="add-row">
-        <input type="text" id="ideaInput" placeholder="Add idea..." style="flex:1; padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
-        <button onclick="addItem('idea')" style="padding:6px 15px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">Add</button>
-      </div>
-    </div>
-    <div id="ideaList"></div>
-  </div>
-</section>
+                <!-- GROCERIES SECTION -->
+                <div class="list-section">
+                    <div class="list-header">
+                        <h3>🛒 Groceries</h3>
+                        <div class="add-row">
+                            <input type="text" id="groceryInput" placeholder="Add grocery item..." style="flex:1; padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                            <button onclick="addItem('grocery')" style="padding:6px 15px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">Add</button>
+                        </div>
+                    </div>
+                    <div id="groceryList"></div>
+                </div>
+
+                <!-- IDEAS SECTION -->
+                <div class="list-section">
+                    <div class="list-header">
+                        <h3>💡 Ideas</h3>
+                        <div class="add-row">
+                            <input type="text" id="ideaInput" placeholder="Add idea..." style="flex:1; padding:6px 12px; border:1px solid #ccc; border-radius:4px; font-size:14px;">
+                            <button onclick="addItem('idea')" style="padding:6px 15px; background:#4CAF50; color:white; border:none; border-radius:4px; cursor:pointer;">Add</button>
+                        </div>
+                    </div>
+                    <div id="ideaList"></div>
+                </div>
+            </section>
         </main>
     </div>
 
