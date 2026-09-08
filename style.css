@@ -24,6 +24,7 @@ html{background:#fff}body{background:#fff}.app{max-width:900px;margin:auto;paddi
   .actions .danger{grid-column:1}
   .actions span{display:none}
   .challengeBtns button{flex:1 1 auto}
+}
 /* Calendar - Grid and Layout */
 #calendarGrid {
   margin: 1.25rem 0;
@@ -264,4 +265,4 @@ html{background:#fff}body{background:#fff}.app{max-width:900px;margin:auto;paddi
     padding: 0.2rem 0.6rem;
   }
 }
-}
+
