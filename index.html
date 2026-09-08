@@ -12,7 +12,9 @@
 <header><b>MY DAY</b><span id="headerDate"></span></header>
 <nav>
 <button data-page="today">Today</button><button data-page="schedule">Schedule</button>
-<button data-page="pursuits">Daily Pursuits</button><button data-page="challenges">Personal Challenges</button><button data-page="history">History</button>
+<button data-page="pursuits">Daily Pursuits</button><button data-page="challenges">Personal Challenges</button>
+<button data-page="reminders">Reminders</button>
+<button data-page="history">History</button>
 </nav>
 <main>
 <section id="today" class="page">
@@ -26,6 +28,30 @@
 <section id="challenges" class="page"><div class="head"><div><small>PERSONAL CHALLENGES</small><h2>Challenges</h2></div><button id="addChallenge">+ Add challenge</button></div><p class="intro">Set a beginning and end, check in each day, add comments, and record your final accomplishment.</p><div id="activeChallenges"></div><div class="sub">COMPLETED CHALLENGES</div><div id="completedChallenges"></div></section>
 <section id="history" class="page"><div class="head"><div><small>HISTORY</small><h2 id="historyTitle"></h2></div><div><button id="prev">←</button><button id="next">→</button></div></div><div class="picker">Go to date <input type="date" id="historyDate"></div><div id="historyContent"></div></section>
 </main></div>
+<section id="reminders" class="page">
+    <div class="head">
+        <div><small>REMINDERS</small><h2>Your lists</h2></div>
+    </div>
+    <p class="intro">Manage your todos, groceries, and ideas in one place.</p>
+    
+    <div class="head gap">
+        <div><small>TODO</small><h2>Tasks to do</h2></div>
+        <button id="addTodo">+ Add todo</button>
+    </div>
+    <div id="todoList"></div>
+    
+    <div class="head gap">
+        <div><small>GROCERIES</small><h2>Items to buy</h2></div>
+        <button id="addGrocery">+ Add grocery</button>
+    </div>
+    <div id="groceryList"></div>
+    
+    <div class="head gap">
+        <div><small>IDEAS</small><h2>Things to explore</h2></div>
+        <button id="addIdea">+ Add idea</button>
+    </div>
+    <div id="ideaList"></div>
+</section>
 
 <dialog id="taskDlg"><form id="taskForm"><h2 id="taskTitle">Add task</h2><input type="hidden" id="taskId">
 <label>Task name<input id="taskName" required></label><div class="two"><label>Start<input id="taskStart" type="time" required></label><label>End<input id="taskEnd" type="time" required></label></div>
@@ -44,7 +70,20 @@
 <div class="two"><label>Start date<input id="challengeStart" type="date" required></label><label>End date<input id="challengeEnd" type="date" required></label></div>
 <label>Daily target<input id="challengeTarget" placeholder="1,000 words (optional)"></label>
 <div class="actions"><button type="button" class="danger hidden" id="delChallenge">Delete</button><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
-
+<dialog id="itemDlg">
+    <form id="itemForm">
+        <h2 id="itemTitle">Add item</h2>
+        <input type="hidden" id="itemType">
+        <input type="hidden" id="itemId">
+        <label>Item name<input id="itemText" required></label>
+        <div class="actions">
+            <button type="button" class="danger hidden" id="delItem">Delete</button>
+            <span></span>
+            <button type="button" class="close">Cancel</button>
+            <button>Save</button>
+        </div>
+    </form>
+</dialog>
 <dialog id="checkDlg"><form id="checkForm"><h2 id="checkTitle"></h2><input type="hidden" id="checkId">
 <label>Today's accomplishment / comment<textarea id="checkComment" placeholder="1,243 words today..."></textarea></label><label class="check"><input type="checkbox" id="checkDone"> Completed today's target</label>
 <div class="actions"><span></span><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
