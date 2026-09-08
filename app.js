@@ -1,6 +1,7 @@
 const KEY='myday-v3-complete';const $=id=>document.getElementById(id);const uid=p=>p+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 let data=JSON.parse(localStorage.getItem(KEY)||'null')||{tasks:[],pursuits:[],challenges:[],reminders:[],days:{},calendarEvents:{}};
 data.reminders??=[];
+data.calendarEvents??={};
 data.challengeJournals??={};data.exportedChallengeYears??={};data.taskOverrides??={};
 // Calendar state
 let calendarView = new Date();
