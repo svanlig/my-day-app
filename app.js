@@ -1,17 +1,211 @@
 const KEY='myday-v3-complete';const $=id=>document.getElementById(id);const uid=p=>p+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{tasks:[],pursuits:[],challenges:[],reminders:[],days:{}};data.reminders??=[];data.challengeJournals??={};data.exportedChallengeYears??={};data.taskOverrides??={};let hist=todayKey(),pastOpen={},scheduleOpen={};
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}function todayKey(){return key(new Date())}function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}function D(k){return new Date(k+'T12:00:00')}function dateText(k){return new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(D(k))}function short(k){return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(D(k))}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}function min(t){let a=t.split(':');return +a[0]*60+ +a[1]}function now(){let d=new Date();return d.getHours()*60+d.getMinutes()}function tt(t){let a=t.split(':'),h=+a[0];return (h%12||12)+':'+a[1]+' '+(h>=12?'PM':'AM')}function day(k=todayKey()){data.days[k]??={tasks:{},pursuits:{},challenges:{},reminders:[]};data.days[k].reminders??=[];return data.days[k]}function ts(id,k=todayKey()){let x=day(k);x.tasks[id]??={done:false,note:''};return x.tasks[id]}function ps(id,k=todayKey()){let x=day(k);x.pursuits[id]??={done:false,note:''};return x.pursuits[id]}function cs(id,k=todayKey()){let x=day(k);x.challenges[id]??={done:false,comment:''};return x.challenges[id]}function tasks(){return data.tasks.filter(x=>x.daily!==false).sort((a,b)=>a.start.localeCompare(b.start))}
-document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));render()});
-function weekday(k){return (D(k).getDay()+6)%7}function migrateSchedule(){let changed=false;data.tasks.forEach(t=>{if(!t.schedule){t.schedule={type:t.daily===false?'unscheduled':'daily'};changed=true}});if(changed)save()}function taskForDate(k){let w=weekday(k),items=[];data.tasks.forEach(t=>{let s=t.schedule||{};if(s.type==='daily'){let o=data.taskOverrides[t.id]?.[w];if(!o?.deleted)items.push(o?{...t,...o,parentId:t.id,weekday:w}:{...t,parentId:t.id,weekday:w})}else if(s.type==='weekday'&&+s.weekday===w)items.push({...t,weekday:w});else if(s.type==='once'&&s.date===k)items.push({...t,weekday:w})});return items.sort((a,b)=>a.start.localeCompare(b.start))}function tasks(k=todayKey()){return taskForDate(k)}migrateSchedule();
+let data=JSON.parse(localStorage.getItem(KEY)||'null')||{tasks:[],pursuits:[],challenges:[],reminders:[],days:{},calendarEvents:{}};
+data.reminders??=[];
+data.challengeJournals??={};data.exportedChallengeYears??={};data.taskOverrides??={};
+// Calendar state
+let calendarView = new Date();
+calendarView.setDate(1); // First of current month
+let hist=todayKey(),pastOpen={},scheduleOpen={};
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function todayKey(){return key(new Date())}
+function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function D(k){return new Date(k+'T12:00:00')}
+function dateText(k){return new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(D(k))}
+function short(k){return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(D(k))}
+function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
+function min(t){let a=t.split(':');return +a[0]*60+ +a[1]}function now(){let d=new Date();return d.getHours()*60+d.getMinutes()}
+function tt(t){let a=t.split(':'),h=+a[0];return (h%12||12)+':'+a[1]+' '+(h>=12?'PM':'AM')}
+function day(k=todayKey()){data.days[k]??={tasks:{},pursuits:{},challenges:{},reminders:[]};data.days[k].reminders??=[];return data.days[k]}
+function ts(id,k=todayKey()){let x=day(k);x.tasks[id]??={done:false,note:''};return x.tasks[id]}
+function ps(id,k=todayKey()){let x=day(k);x.pursuits[id]??={done:false,note:''};return x.pursuits[id]}
+function cs(id,k=todayKey()){let x=day(k);x.challenges[id]??={done:false,comment:''};return x.challenges[id]}
+function tasks(){return data.tasks.filter(x=>x.daily!==false).sort((a,b)=>a.start.localeCompare(b.start))}
+document.querySelectorAll('nav button').forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll('.page').forEach(x => x.classList.toggle('active', x.id === b.dataset.page));
+    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
+    if (b.dataset.page === 'calendar') {
+      renderCalendar();
+    } else {
+      render();
+    }
+  }
+});function weekday(k){return (D(k).getDay()+6)%7}
+function migrateSchedule(){let changed=false;data.tasks.forEach(t=>{if(!t.schedule){t.schedule={type:t.daily===false?'unscheduled':'daily'};changed=true}});if(changed)save()}function taskForDate(k){let w=weekday(k),items=[];data.tasks.forEach(t=>{let s=t.schedule||{};if(s.type==='daily'){let o=data.taskOverrides[t.id]?.[w];if(!o?.deleted)items.push(o?{...t,...o,parentId:t.id,weekday:w}:{...t,parentId:t.id,weekday:w})}else if(s.type==='weekday'&&+s.weekday===w)items.push({...t,weekday:w});else if(s.type==='once'&&s.date===k)items.push({...t,weekday:w})});return items.sort((a,b)=>a.start.localeCompare(b.start))}function tasks(k=todayKey()){return taskForDate(k)}migrateSchedule();
 document.querySelectorAll('.todayToggle').forEach(b=>b.onclick=()=>{let content=$(b.dataset.target),minimized=content.classList.toggle('hidden');b.textContent=minimized?'＋':'−';b.setAttribute('aria-expanded',String(!minimized));b.setAttribute('aria-label',(minimized?'Maximize ':'Minimize ')+b.closest('.head').querySelector('h2').textContent)});
 function archiveCompletedReminders(){let before=data.reminders.length;data.reminders=data.reminders.filter(r=>!r.completedOn||r.completedOn>=todayKey());if(data.reminders.length!==before)save()}
-function render(){ archiveCompletedReminders();$('headerDate').textContent=dateText(todayKey());today();schedule();pursuits();challenges();reminders();history()}
+function render() { 
+  archiveCompletedReminders();
+  $('headerDate').textContent = dateText(todayKey());
+  today();
+  schedule();
+  pursuits();
+  challenges();
+  reminders();
+  history();
+  // Only render calendar if calendar tab is active
+  if (document.getElementById('calendar').classList.contains('active')) {
+    renderCalendar();
+  }
+}
 function today(){let a=tasks(),n=now(),c=a.find(x=>n>=min(x.start)&&n<min(x.end))||a.find(x=>min(x.start)>n);if(c){let s=ts(c.id);$('current').innerHTML='<div class="currentName">'+esc(c.name)+'</div><div class="muted">'+tt(c.start)+' — '+tt(c.end)+'</div>'+(c.details?'<div class="details">'+esc(c.details)+'</div>':'')+(s.note?'<div class="note">Note: '+esc(s.note)+'</div>':'')+'<div class="actionsNow"><button class="primary" onclick="toggleTask(\''+c.id+'\')">'+(s.done?'✓ Completed':'Mark as done')+'</button><button onclick="openNote(\'task\',\''+c.id+'\')">'+(s.note?'Edit note':'Add note')+'</button></div>'}else $('current').innerHTML='<div class="currentName">'+(a.length?'No current task':'No scheduled tasks')+'</div><div class="muted">'+(a.length?'Your next task will appear here.':'Add tasks in Schedule.')+'</div>'; $('todayTasks').innerHTML=a.length?a.map(taskRow).join(''):'<div class="empty">No scheduled tasks.</div>';let p=data.pursuits;$('todayPursuits').innerHTML=p.length?p.map(pursuitRow).join(''):'<div class="empty">No daily pursuits.</div>';let ac=data.challenges.filter(c=>!c.completed&&todayKey()>=c.start&&todayKey()<=c.end);$('todayChallenges').innerHTML=ac.length?ac.map(c=>challengeToday(c)).join(''):'<div class="empty">No active personal challenges today.</div>'}
 function taskRow(t){let s=ts(t.id);return '<div class="row"><button class="circle '+(s.done?'done':'')+'" onclick="toggleTask(\''+t.id+'\')">'+(s.done?'✓':'')+'</button><div class="time">'+tt(t.start)+'</div><div class="main"><div class="name '+(s.done?'done':'')+'">'+esc(t.name)+'</div>'+(t.details?'<div class="details">'+esc(t.details)+'</div>':'')+(s.note?'<div class="note">Note: '+esc(s.note)+'</div>':'')+'</div><button class="edit" onclick="openNote(\'task\',\''+t.id+'\')">'+(s.note?'Note':'+')+'</button></div>'}
 function pursuitRow(p){let s=ps(p.id);return '<div class="row"><button class="circle '+(s.done?'done':'')+'" onclick="togglePursuit(\''+p.id+'\')">'+(s.done?'✓':'')+'</button><div class="main"><div class="name '+(s.done?'done':'')+'">'+esc(p.name)+'</div>'+(p.details?'<div class="details">'+esc(p.details)+'</div>':'')+(s.note?'<div class="note">Note: '+esc(s.note)+'</div>':'')+'</div><button class="edit" onclick="openNote(\'pursuit\',\''+p.id+'\')">'+(s.note?'Note':'+')+'</button></div>'}
 const weekNames=['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
 function scheduleForWeekday(w){let items=[];data.tasks.forEach(t=>{let s=t.schedule||{};if(s.type==='daily'){let o=data.taskOverrides[t.id]?.[w];if(!o?.deleted)items.push(o?{...t,...o,parentId:t.id,weekday:w}:{...t,parentId:t.id,weekday:w})}else if(s.type==='weekday'&&+s.weekday===w)items.push({...t,weekday:w});else if(s.type==='once'&&s.date>=todayKey()&&weekday(s.date)===w)items.push({...t,weekday:w})});return items.sort((a,b)=>a.start.localeCompare(b.start))}
 function scheduleRow(t,w){let s=t.schedule||{},tag=t.parentId?'Every day · '+weekNames[w]+' override':s.type==='daily'?'Every day':s.type==='weekday'?'Every '+weekNames[w]:s.type==='once'?'One time · '+short(s.date):'Needs a recurrence';return '<div class="row scheduleRow"><div class="time">'+tt(t.start)+'</div><div class="main"><div class="name">'+esc(t.name)+'</div><div class="meta">'+tag+'</div>'+(t.details?'<div class="details">'+esc(t.details)+'</div>':'')+'</div><button class="edit" onclick="editTask(\''+(t.parentId||t.id)+'\','+w+')">Edit</button><button class="edit" onclick="deleteScheduleTask(\''+(t.parentId||t.id)+'\','+w+')">Delete</button></div>'}
+// Calendar functions
+function renderCalendar() {
+  const year = calendarView.getFullYear();
+  const month = calendarView.getMonth();
+  
+  $('calendarMonth').textContent = new Intl.DateTimeFormat(undefined, { 
+    month: 'long', 
+    year: 'numeric' 
+  }).format(calendarView);
+  
+  // Get first day of month (0=Sunday, adjust so Monday=0)
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + 
+                   String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                   String(today.getDate()).padStart(2, '0');
+  
+  let html = '<div class="calendarWeekdays">';
+  ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].forEach(d => {
+    html += '<div class="calendarWeekday">' + d + '</div>';
+  });
+  html += '</div><div class="calendarDays">';
+  
+  // Empty cells before first day
+  const offset = (firstDay === 0 ? 6 : firstDay - 1);
+  for (let i = 0; i < offset; i++) {
+    html += '<div class="calendarDay empty"></div>';
+  }
+  
+  // Days
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    const isToday = dateStr === todayStr;
+    const events = data.calendarEvents[dateStr] || [];
+    const hasEvents = events.length > 0;
+    
+    html += '<div class="calendarDay' + (isToday ? ' today' : '') + (hasEvents ? ' hasEvents' : '') + '" data-date="' + dateStr + '">';
+    html += '<div class="calendarDayNumber">' + d + '</div>';
+    if (hasEvents) {
+      html += '<div class="calendarDayDots">';
+      events.slice(0, 2).forEach(e => {
+        html += '<span class="calendarDayDot"></span>';
+      });
+      if (events.length > 2) html += '<span class="calendarDayDot more">+</span>';
+      html += '</div>';
+    }
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  $('calendarGrid').innerHTML = html;
+  
+  // Click handlers for days
+  document.querySelectorAll('.calendarDay:not(.empty)').forEach(el => {
+    el.onclick = () => showDayEvents(el.dataset.date);
+  });
+  
+  // Show events for today by default, or first day with events
+  if (data.calendarEvents[todayStr] && data.calendarEvents[todayStr].length > 0) {
+    showDayEvents(todayStr);
+  } else {
+    // Find first day with events in current month
+    let found = false;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dateStr = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      if (data.calendarEvents[dateStr] && data.calendarEvents[dateStr].length > 0) {
+        showDayEvents(dateStr);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      $('calendarEvents').innerHTML = '<div class="empty">Click a date to add an event.</div>';
+    }
+  }
+}
+
+function showDayEvents(dateStr) {
+  const events = data.calendarEvents[dateStr] || [];
+  const dateObj = new Date(dateStr + 'T12:00:00');
+  const dateDisplay = new Intl.DateTimeFormat(undefined, { 
+    weekday: 'long', 
+    month: 'long', 
+    day: 'numeric', 
+    year: 'numeric' 
+  }).format(dateObj);
+  
+  let html = '<div class="calendarDayEvents"><div class="calendarDayEventsHead">';
+  html += '<h3>' + dateDisplay + '</h3>';
+  html += '<button onclick="addCalendarEvent(\'' + dateStr + '\')">+ Add event</button>';
+  html += '</div>';
+  
+  if (events.length === 0) {
+    html += '<div class="empty">No events on this date.</div>';
+  } else {
+    html += '<div class="calendarEventList">';
+    events.sort((a, b) => (a.time || '00:00').localeCompare(b.time || '00:00'));
+    events.forEach((e, idx) => {
+      html += '<div class="row calendarEventRow">';
+      html += '<div class="main">';
+      html += '<div class="name">' + esc(e.name) + '</div>';
+      if (e.time) html += '<div class="time">' + tt(e.time) + '</div>';
+      if (e.note) html += '<div class="note">' + esc(e.note) + '</div>';
+      html += '</div>';
+      html += '<button class="edit" onclick="editCalendarEvent(\'' + dateStr + '\',' + idx + ')">Edit</button>';
+      html += '<button class="edit" onclick="deleteCalendarEvent(\'' + dateStr + '\',' + idx + ')">Delete</button>';
+      html += '</div>';
+    });
+    html += '</div>';
+  }
+  
+  html += '</div>';
+  $('calendarEvents').innerHTML = html;
+}
+
+function addCalendarEvent(dateStr) {
+  $('calendarEventId').value = '';
+  $('calendarEventDate').value = dateStr;
+  $('calendarEventName').value = '';
+  $('calendarEventTime').value = '';
+  $('calendarEventNote').value = '';
+  $('calendarEventTitle').textContent = 'Add Event';
+  $('delCalendarEvent').classList.add('hidden');
+  $('calendarEventDlg').showModal();
+}
+
+function editCalendarEvent(dateStr, idx) {
+  const events = data.calendarEvents[dateStr] || [];
+  const e = events[idx];
+  if (!e) return;
+  $('calendarEventId').value = idx;
+  $('calendarEventDate').value = dateStr;
+  $('calendarEventName').value = e.name;
+  $('calendarEventTime').value = e.time || '';
+  $('calendarEventNote').value = e.note || '';
+  $('calendarEventTitle').textContent = 'Edit Event';
+  $('delCalendarEvent').classList.remove('hidden');
+  $('calendarEventDlg').showModal();
+}
+
+function deleteCalendarEvent(dateStr, idx) {
+  if (!confirm('Delete this event?')) return;
+  const events = data.calendarEvents[dateStr] || [];
+  events.splice(idx, 1);
+  if (events.length === 0) {
+    delete data.calendarEvents[dateStr];
+  }
+  save();
+  renderCalendar();
+  $('calendarEventDlg').close();
+}
 function toggleScheduleDay(w){scheduleOpen[w]=!(scheduleOpen[w]!==false);render()}
 function schedule(){let weekdays=weekNames.map((name,w)=>{let open=scheduleOpen[w]!==false,items=scheduleForWeekday(w);return '<div class="scheduleDay"><div class="head scheduleDayHead"><h2>'+name+'</h2><button onclick="toggleScheduleDay('+w+')" aria-expanded="'+open+'">'+(open?'−':'＋')+'</button></div>'+(open?(items.length?items.map(t=>scheduleRow(t,w)).join(''):'<div class="empty">No scheduled items.</div>'):'')+'</div>'}).join(''),legacy=data.tasks.filter(t=>(t.schedule||{}).type==='unscheduled');$('scheduleList').innerHTML=weekdays+(legacy.length?'<div class="scheduleDay"><div class="sub">UNSCHEDULED EXISTING ITEMS</div>'+legacy.map(t=>'<div class="row scheduleRow"><div class="main"><div class="name">'+esc(t.name)+'</div><div class="meta">Choose a recurrence or date to schedule this item.</div></div><button class="edit" onclick="editTask(\''+t.id+'\')">Edit</button></div>').join('')+'</div>':'')}
 function pursuits(){$('pursuitList').innerHTML=data.pursuits.map(p=>'<div class="row"><div class="main"><div class="name">'+esc(p.name)+'</div><div class="details">'+(esc(p.details)||'No description added.')+'</div></div><button class="edit" onclick="editPursuit(\''+p.id+'\')">Edit</button></div>').join('')||'<div class="empty">No daily pursuits.</div>'}
@@ -60,7 +254,50 @@ function toggleReminder(id){let r=data.reminders.find(r=>r.id===id);if(!r)return
 function editReminder(id){let r=data.reminders.find(r=>r.id===id);if(!r)return;$('reminderId').value=r.id;$('reminderName').value=r.name;$('reminderCategory').value=r.category;$('reminderTitle').textContent='Edit reminder';$('reminderDlg').showModal()}
 function deleteReminder(id){let r=data.reminders.find(r=>r.id===id);if(!r)return;if(confirm('Delete this reminder?')){data.reminders=data.reminders.filter(x=>x.id!==id);Object.values(data.days).forEach(d=>d.reminders&&(d.reminders=d.reminders.filter(x=>x.id!==id)));save();render()}}
 $('reminderForm').onsubmit=e=>{e.preventDefault();let id=$('reminderId').value,r=data.reminders.find(r=>r.id===id),name=$('reminderName').value.trim(),category=$('reminderCategory').value;if(r){r.name=name;r.category=category;reminderHistory(r.id).forEach(x=>{x.name=name;x.category=category})}else data.reminders.push({id:uid('r'),name,category});save();$('reminderDlg').close();render()}
+// Calendar form handler
+$('calendarEventForm').onsubmit = e => {
+  e.preventDefault();
+  const dateStr = $('calendarEventDate').value;
+  const idx = $('calendarEventId').value;
+  const name = $('calendarEventName').value.trim();
+  const time = $('calendarEventTime').value;
+  const note = $('calendarEventNote').value.trim();
+  
+  if (!name) return alert('Please enter an event title.');
+  
+  if (!data.calendarEvents[dateStr]) {
+    data.calendarEvents[dateStr] = [];
+  }
+  
+  const event = { name, time, note };
+  
+  if (idx === '') {
+    data.calendarEvents[dateStr].push(event);
+  } else {
+    data.calendarEvents[dateStr][parseInt(idx)] = event;
+  }
+  
+  save();
+  $('calendarEventDlg').close();
+  renderCalendar();
+};
+
+$('delCalendarEvent').onclick = () => {
+  const dateStr = $('calendarEventDate').value;
+  const idx = parseInt($('calendarEventId').value);
+  deleteCalendarEvent(dateStr, idx);
+};
 $('addTask').onclick=()=>openTask();$('addPursuit').onclick=()=>openPursuit();$('addChallenge').onclick=()=>openChallenge();document.querySelectorAll('.reminderAdd').forEach(b=>b.onclick=()=>{$('reminderId').value='';$('reminderName').value='';$('reminderCategory').value=b.dataset.category;$('reminderTitle').textContent='Add reminder';$('reminderDlg').showModal()});
 document.querySelectorAll('.close').forEach(b=>b.onclick=()=>b.closest('dialog').close());$('prev').onclick=()=>{let d=D(hist);d.setDate(d.getDate()-1);hist=key(d);render()};$('next').onclick=()=>{let d=D(hist);d.setDate(d.getDate()+1);hist=key(d);render()};$('historyDate').onchange=e=>{hist=e.target.value;render()}
+// Calendar navigation
+$('calendarPrev').onclick = () => {
+  calendarView.setMonth(calendarView.getMonth() - 1);
+  renderCalendar();
+};
+
+$('calendarNext').onclick = () => {
+  calendarView.setMonth(calendarView.getMonth() + 1);
+  renderCalendar();
+};
 function history(){ $('historyTitle').textContent=dateText(hist);$('historyDate').value=hist;let r=data.days[hist];if(!r){$('historyContent').innerHTML='<div class="empty">No activity recorded for '+esc(dateText(hist))+'.</div>';return}let a=tasks(hist).map(t=>{let s=r.tasks?.[t.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(t.name)+'<div class="historyNote">'+tt(t.start)+' — '+tt(t.end)+(t.details?'\n'+esc(t.details):'')+(s.note?'\nNote: '+esc(s.note):'')+'</div></div>'}).join(''),p=data.pursuits.map(x=>{let s=r.pursuits?.[x.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.note?'<div class="historyNote">Note: '+esc(s.note)+'</div>':'')+'</div>'}).join(''),c=data.challenges.filter(x=>r.challenges?.[x.id]).map(x=>{let s=r.challenges[x.id];return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.comment?'<div class="historyNote">'+esc(s.comment)+'</div>':'')+'</div>'}).join(''),m=(r.reminders||[]).map(x=>'<div class="historyItem">✓ '+esc(x.name)+'<div class="historyNote">'+esc({todo:'To Do',buy:'To Buy',ideas:'Ideas'}[x.category]||'Reminders')+'</div></div>').join('');$('historyContent').innerHTML='<div class="historyBlock"><small>SCHEDULED TASKS</small>'+a+'</div><div class="historyBlock"><small>DAILY PURSUITS</small>'+p+'</div><div class="historyBlock"><small>PERSONAL CHALLENGES</small>'+c+'</div><div class="historyBlock"><small>REMINDERS COMPLETED</small>'+m+'</div>'}
 render();setInterval(()=>{render()},30000);
