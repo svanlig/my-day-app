@@ -27,7 +27,6 @@
 <section id="pursuits" class="page"><div class="head"><div><small>DAILY PURSUITS</small><h2>Things I aim to do</h2></div><button id="addPursuit">+ Add pursuit</button></div><p class="intro">Productive things you want to do when you have spare time, separate from chores and scheduled tasks.</p><div id="pursuitList"></div></section>
 <section id="challenges" class="page"><div class="head"><div><small>PERSONAL CHALLENGES</small><h2>Challenges</h2></div><button id="addChallenge">+ Add challenge</button></div><p class="intro">Set a beginning and end, check in each day, add comments, and record your final accomplishment.</p><div id="activeChallenges"></div><div class="sub">COMPLETED CHALLENGES</div><div id="completedChallenges"></div></section>
 <section id="history" class="page"><div class="head"><div><small>HISTORY</small><h2 id="historyTitle"></h2></div><div><button id="prev">←</button><button id="next">→</button></div></div><div class="picker">Go to date <input type="date" id="historyDate"></div><div id="historyContent"></div></section>
-</main></div>
 <section id="reminders" class="page">
     <div class="head">
         <div><small>REMINDERS</small><h2>Your lists</h2></div>
@@ -52,7 +51,7 @@
     </div>
     <div id="ideaList"></div>
 </section>
-
+</main></div>
 <dialog id="taskDlg"><form id="taskForm"><h2 id="taskTitle">Add task</h2><input type="hidden" id="taskId">
 <label>Task name<input id="taskName" required></label><div class="two"><label>Start<input id="taskStart" type="time" required></label><label>End<input id="taskEnd" type="time" required></label></div>
 <label>Details / description<textarea id="taskDetails"></textarea></label><label class="check"><input id="taskDaily" type="checkbox" checked> Repeat every day</label>
