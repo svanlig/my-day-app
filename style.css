@@ -25,3 +25,243 @@ html{background:#fff}body{background:#fff}.app{max-width:900px;margin:auto;paddi
   .actions span{display:none}
   .challengeBtns button{flex:1 1 auto}
 }
+/* Calendar - Grid and Layout */
+#calendarGrid {
+  margin: 1.25rem 0;
+}
+
+.calendarWeekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-top: 2px solid #000;
+  border-left: 2px solid #000;
+}
+
+.calendarWeekday {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 0;
+  text-align: center;
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  background: #f5f5f5;
+}
+
+.calendarDays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  border-left: 2px solid #000;
+}
+
+.calendarDay {
+  border-right: 2px solid #000;
+  border-bottom: 2px solid #000;
+  min-height: 3.5rem;
+  padding: 0.35rem;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  transition: background 0.1s;
+  background: #fff;
+}
+
+.calendarDay.empty {
+  background: #f9f9f9;
+  cursor: default;
+}
+
+.calendarDay:hover:not(.empty) {
+  background: #f0f0f0;
+}
+
+.calendarDayNumber {
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+/* Today highlight - black outline */
+.calendarDay.today {
+  outline: 2px solid #000;
+  outline-offset: -2px;
+}
+
+/* Events indicator - subtle dot */
+.calendarDay.hasEvents .calendarDayNumber::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: #000;
+  margin: 1px auto 0;
+  border-radius: 50%;
+}
+
+.calendarDayDots {
+  display: none; /* Hide dots, use single dot via pseudo-element instead */
+}
+
+/* Events list below calendar */
+.calendarDayEvents {
+  margin-top: 1.25rem;
+  border-top: 2px solid #000;
+  padding-top: 1rem;
+}
+
+.calendarDayEventsHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.calendarDayEventsHead h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.calendarDayEventsHead button {
+  background: #000;
+  color: #fff;
+  border: none;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.calendarDayEventsHead button:hover {
+  opacity: 0.7;
+}
+
+.calendarEventList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.calendarEventRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid #eee;
+}
+
+.calendarEventRow .main {
+  flex: 1;
+}
+
+.calendarEventRow .name {
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.calendarEventRow .time {
+  font-size: 0.75rem;
+  color: #555;
+  margin-top: 0.05rem;
+}
+
+.calendarEventRow .note {
+  font-size: 0.75rem;
+  color: #666;
+  margin-top: 0.05rem;
+  font-style: italic;
+}
+
+.calendarEventRow button.edit {
+  background: none;
+  border: 1px solid #000;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  background: #fff;
+  color: #000;
+}
+
+.calendarEventRow button.edit:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* Calendar navigation buttons */
+#calendarPrev,
+#calendarNext {
+  background: none;
+  border: 2px solid #000;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.85rem;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  background: #fff;
+  color: #000;
+}
+
+#calendarPrev:hover,
+#calendarNext:hover {
+  background: #000;
+  color: #fff;
+}
+
+/* Responsive - phones */
+@media (max-width: 480px) {
+  .calendarDay {
+    min-height: 2.75rem;
+    padding: 0.2rem;
+  }
+  
+  .calendarDayNumber {
+    font-size: 0.7rem;
+  }
+  
+  .calendarDay.hasEvents .calendarDayNumber::after {
+    width: 3px;
+    height: 3px;
+  }
+  
+  .calendarWeekday {
+    font-size: 0.55rem;
+    padding: 0.35rem 0;
+  }
+  
+  .calendarEventRow {
+    padding: 0.3rem 0.4rem;
+  }
+  
+  .calendarEventRow .name {
+    font-size: 0.8rem;
+  }
+  
+  .calendarEventRow button.edit {
+    font-size: 0.55rem;
+    padding: 0.1rem 0.4rem;
+  }
+  
+  #calendarPrev,
+  #calendarNext {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+  }
+  
+  .calendarDayEventsHead h3 {
+    font-size: 0.8rem;
+  }
+  
+  .calendarDayEventsHead button {
+    font-size: 0.65rem;
+    padding: 0.2rem 0.6rem;
+  }
+}
