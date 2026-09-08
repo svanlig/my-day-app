@@ -1,6 +1,22 @@
 const KEY='myday-v3-complete';const $=id=>document.getElementById(id);const uid=p=>p+'-'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-let data=JSON.parse(localStorage.getItem(KEY)||'null')||{tasks:[],pursuits:[],challenges:[],days:{}};let hist=todayKey();
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}function todayKey(){return key(new Date())}function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}function D(k){return new Date(k+'T12:00:00')}function dateText(k){return new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(D(k))}function short(k){return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(D(k))}function esc(s){return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}function min(t){let a=t.split(':');return +a[0]*60+ +a[1]}function now(){let d=new Date();return d.getHours()*60+d.getMinutes()}function tt(t){let a=t.split(':'),h=+a[0];return (h%12||12)+':'+a[1]+' '+(h>=12?'PM':'AM')}function day(k=todayKey()){data.days[k]??={tasks:{},pursuits:{},challenges:{}};return data.days[k]}function ts(id,k=todayKey()){let x=day(k);x.tasks[id]??={done:false,note:''};return x.tasks[id]}function ps(id,k=todayKey()){let x=day(k);x.pursuits[id]??={done:false,note:''};return x.pursuits[id]}function cs(id,k=todayKey()){let x=day(k);x.challenges[id]??={done:false,comment:''};return x.challenges[id]}function tasks(){return data.tasks.filter(x=>x.daily!==false).sort((a,b)=>a.start.localeCompare(b.start))}
+let data = JSON.parse(localStorage.getItem(KEY) || 'null') || { tasks: [], pursuits: [], challenges: [], reminders: [], days: {} };
+data.reminders ??= [];
+let hist = todayKey();
+function save() { localStorage.setItem(KEY, JSON.stringify(data)) } function todayKey() { return key(new Date()) }
+function key(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') }
+function D(k) { return new Date(k + 'T12:00:00') } function dateText(k) { return new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(D(k)) }
+function short(k) { return new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric' }).format(D(k)) }
+function esc(s) { return String(s || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c])) }
+function min(t) { let a = t.split(':'); return +a[0] * 60 + +a[1] } function now() { let d = new Date(); return d.getHours() * 60 + d.getMinutes() }
+function tt(t) { let a = t.split(':'), h = +a[0]; return (h % 12 || 12) + ':' + a[1] + ' ' + (h >= 12 ? 'PM' : 'AM') }
+function day(k = todayKey()) { data.days[k] ??= { tasks: {}, pursuits: {}, challenges: {} }; return data.days[k] }
+function ts(id, k = todayKey()) { let x = day(k); x.tasks[id] ??= { done: false, note: '' }; return x.tasks[id] }
+function ps(id, k = todayKey()) { let x = day(k); x.pursuits[id] ??= { done: false, note: '' }; return x.pursuits[id] }
+function cs(id, k = todayKey()) { let x = day(k); x.challenges[id] ??= { done: false, comment: '' }; return x.challenges[id] }
+function tasks() { return data.tasks.filter(x => x.daily !== false).sort((a, b) => a.start.localeCompare(b.start)) }
+function activeReminders() {
+    return data.reminders.filter(r => !r.completed);
+}
 document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));render()});
 function render(){ $('headerDate').textContent=dateText(todayKey());today();schedule();pursuits();challenges();history()}
 function today(){let a=tasks(),n=now(),c=a.find(x=>n>=min(x.start)&&n<min(x.end))||a.find(x=>min(x.start)>n);if(c){let s=ts(c.id);$('current').innerHTML='<div class="currentName">'+esc(c.name)+'</div><div class="muted">'+tt(c.start)+' — '+tt(c.end)+'</div>'+(c.details?'<div class="details">'+esc(c.details)+'</div>':'')+(s.note?'<div class="note">Note: '+esc(s.note)+'</div>':'')+'<div class="actionsNow"><button class="primary" onclick="toggleTask(\''+c.id+'\')">'+(s.done?'✓ Completed':'Mark as done')+'</button><button onclick="openNote(\'task\',\''+c.id+'\')">'+(s.note?'Edit note':'Add note')+'</button></div>'}else $('current').innerHTML='<div class="currentName">'+(a.length?'No current task':'No scheduled tasks')+'</div><div class="muted">'+(a.length?'Your next task will appear here.':'Add tasks in Schedule.')+'</div>'; $('todayTasks').innerHTML=a.length?a.map(taskRow).join(''):'<div class="empty">No scheduled tasks.</div>';let p=data.pursuits;$('todayPursuits').innerHTML=p.length?p.map(pursuitRow).join(''):'<div class="empty">No daily pursuits.</div>';let ac=data.challenges.filter(c=>!c.completed&&todayKey()>=c.start&&todayKey()<=c.end);$('todayChallenges').innerHTML=ac.length?ac.map(c=>challengeToday(c)).join(''):'<div class="empty">No active personal challenges today.</div>'}
@@ -8,15 +24,19 @@ function taskRow(t){let s=ts(t.id);return '<div class="row"><button class="circl
 function pursuitRow(p){let s=ps(p.id);return '<div class="row"><button class="circle '+(s.done?'done':'')+'" onclick="togglePursuit(\''+p.id+'\')">'+(s.done?'✓':'')+'</button><div class="main"><div class="name '+(s.done?'done':'')+'">'+esc(p.name)+'</div>'+(p.details?'<div class="details">'+esc(p.details)+'</div>':'')+(s.note?'<div class="note">Note: '+esc(s.note)+'</div>':'')+'</div><button class="edit" onclick="openNote(\'pursuit\',\''+p.id+'\')">'+(s.note?'Note':'+')+'</button></div>'}
 function schedule(){$('scheduleList').innerHTML=data.tasks.slice().sort((a,b)=>a.start.localeCompare(b.start)).map(t=>'<div class="row"><div class="time">'+tt(t.start)+'</div><div class="main"><div class="name">'+esc(t.name)+'</div><div class="meta">'+tt(t.start)+' — '+tt(t.end)+' · '+(t.daily===false?'one-time':'daily')+'</div><div class="details">'+(esc(t.details)||'No description added.')+'</div></div><button class="edit" onclick="editTask(\''+t.id+'\')">Edit</button></div>').join('')||'<div class="empty">No scheduled tasks.</div>'}
 function pursuits(){$('pursuitList').innerHTML=data.pursuits.map(p=>'<div class="row"><div class="main"><div class="name">'+esc(p.name)+'</div><div class="details">'+(esc(p.details)||'No description added.')+'</div></div><button class="edit" onclick="editPursuit(\''+p.id+'\')">Edit</button></div>').join('')||'<div class="empty">No daily pursuits.</div>'}
-function total(c){return Math.max(1,Math.round((D(c.end)-D(c.start))/86400000)+1)}function elapsed(c){let k=todayKey();if(k<c.start)return 0;if(k>c.end)return total(c);return Math.round((D(k)-D(c.start))/86400000)+1}function count(c){return Object.values(data.days).filter(x=>x.challenges?.[c.id]?.done).length}
+function total(c) { return Math.max(1, Math.round((D(c.end) - D(c.start)) / 86400000) + 1) }
+function elapsed(c) { let k = todayKey(); if (k < c.start) return 0; if (k > c.end) return total(c); return Math.round((D(k) - D(c.start)) / 86400000) + 1 }
+function count(c) { return Object.values(data.days).filter(x => x.challenges?.[c.id]?.done).length }
 function challengeToday(c){let s=cs(c.id);return '<div class="challenge"><div class="challengeTitle">'+esc(c.name)+'</div><div class="challengeDates">'+short(c.start)+' — '+short(c.end)+' · Day '+elapsed(c)+' of '+total(c)+'</div>'+(c.target?'<div class="details">Daily target: '+esc(c.target)+'</div>':'')+'<div class="bar"><div class="fill" style="width:'+Math.round(elapsed(c)/total(c)*100)+'%"></div></div><div class="meta">'+(s.done?'✓ Today completed':'Today not completed')+'</div><div class="challengeBtns"><button class="primary" onclick="toggleChallenge(\''+c.id+'\')">'+(s.done?'Undo today':'Complete today')+'</button><button onclick="checkin(\''+c.id+'\')">Comment</button></div></div>'}
 function challenges(){let a=data.challenges.filter(c=>!c.completed&&todayKey()<=c.end),done=data.challenges.filter(c=>c.completed);$('activeChallenges').innerHTML=a.length?a.map(challengeCard).join(''):'<div class="empty">No active challenges. Create one to get started.</div>';$('completedChallenges').innerHTML=done.length?done.map(completedCard).join(''):'<div class="empty">No completed challenges yet.</div>'}
 function challengeCard(c){let T=total(c),n=count(c),p=Math.min(100,Math.round(n/T*100)),dots='';for(let i=0;i<T;i++){let d=D(c.start);d.setDate(d.getDate()+i),k=key(d),s=data.days[k]?.challenges?.[c.id];dots+='<span class="day '+(s?.done?'done ':'')+(k===todayKey()?'today':'')+'">'+(i+1)+'</span>'}return '<div class="challenge"><div class="challengeTitle">'+esc(c.name)+'</div><div class="challengeDates">'+dateText(c.start)+' — '+dateText(c.end)+' · Day '+elapsed(c)+' of '+T+'</div>'+(c.description?'<div class="details">'+esc(c.description)+'</div>':'')+(c.target?'<div class="details">Daily target: '+esc(c.target)+'</div>':'')+'<div class="bar"><div class="fill" style="width:'+p+'%"></div></div><div class="meta">'+n+' of '+T+' days completed · '+p+'%</div><div class="days">'+dots+'</div><div class="challengeBtns"><button class="primary" onclick="checkin(\''+c.id+'\')">Today\'s check-in</button><button onclick="editChallenge(\''+c.id+'\')">Edit</button>'+(todayKey()>=c.end?'<button onclick="finish(\''+c.id+'\')">Finish & record result</button>':'')+'</div></div>'}
 function completedCard(c){return '<div class="challenge"><div class="challengeTitle">'+esc(c.name)+' <span class="meta">COMPLETED</span></div><div class="challengeDates">'+dateText(c.start)+' — '+dateText(c.end)+' · '+total(c)+' days</div><div class="meta">'+count(c)+' of '+total(c)+' days completed</div>'+(c.final?'<div class="result"><b>Final accomplishment</b>\n'+esc(c.final)+'</div>':'')+'<div class="challengeBtns"><button onclick="editChallenge(\''+c.id+'\')">Edit</button></div></div>'}
-function editTask(id){openTask(id)}function openTask(id){let t=id&&data.tasks.find(x=>x.id===id);$('taskId').value=t?.id||'';$('taskName').value=t?.name||'';$('taskStart').value=t?.start||'09:00';$('taskEnd').value=t?.end||'09:30';$('taskDetails').value=t?.details||'';$('taskDaily').checked=t?t.daily!==false:true;$('taskTitle').textContent=t?'Edit task':'Add task';$('delTask').classList.toggle('hidden',!t);$('taskDlg').showModal()}
+function editTask(id) { openTask(id) }
+function openTask(id) { let t = id && data.tasks.find(x => x.id === id); $('taskId').value = t?.id || ''; $('taskName').value = t?.name || ''; $('taskStart').value = t?.start || '09:00'; $('taskEnd').value = t?.end || '09:30'; $('taskDetails').value = t?.details || ''; $('taskDaily').checked = t ? t.daily !== false : true; $('taskTitle').textContent = t ? 'Edit task' : 'Add task'; $('delTask').classList.toggle('hidden', !t); $('taskDlg').showModal() }
 $('taskForm').onsubmit=e=>{e.preventDefault();if(min($('taskEnd').value)<=min($('taskStart').value))return alert('End time must be after start time.');let id=$('taskId').value||uid('t'),x={id,name:$('taskName').value.trim(),start:$('taskStart').value,end:$('taskEnd').value,details:$('taskDetails').value.trim(),daily:$('taskDaily').checked},i=data.tasks.findIndex(t=>t.id===id);i<0?data.tasks.push(x):data.tasks[i]=x;save();$('taskDlg').close();render()}
 $('delTask').onclick=()=>{let id=$('taskId').value;if(confirm('Delete this task?')){data.tasks=data.tasks.filter(x=>x.id!==id);Object.values(data.days).forEach(d=>delete d.tasks?.[id]);save();$('taskDlg').close();render()}}
-function editPursuit(id){openPursuit(id)}function openPursuit(id){let p=id&&data.pursuits.find(x=>x.id===id);$('pursuitId').value=p?.id||'';$('pursuitName').value=p?.name||'';$('pursuitDetails').value=p?.details||'';$('pursuitTitle').textContent=p?'Edit pursuit':'Add pursuit';$('delPursuit').classList.toggle('hidden',!p);$('pursuitDlg').showModal()}
+function editPursuit(id) { openPursuit(id) }
+function openPursuit(id) { let p = id && data.pursuits.find(x => x.id === id); $('pursuitId').value = p?.id || ''; $('pursuitName').value = p?.name || ''; $('pursuitDetails').value = p?.details || ''; $('pursuitTitle').textContent = p ? 'Edit pursuit' : 'Add pursuit'; $('delPursuit').classList.toggle('hidden', !p); $('pursuitDlg').showModal() }
 $('pursuitForm').onsubmit=e=>{e.preventDefault();let id=$('pursuitId').value||uid('p'),x={id,name:$('pursuitName').value.trim(),details:$('pursuitDetails').value.trim()},i=data.pursuits.findIndex(p=>p.id===id);i<0?data.pursuits.push(x):data.pursuits[i]=x;save();$('pursuitDlg').close();render()}
 $('delPursuit').onclick=()=>{let id=$('pursuitId').value;if(confirm('Delete this pursuit?')){data.pursuits=data.pursuits.filter(x=>x.id!==id);Object.values(data.days).forEach(d=>delete d.pursuits?.[id]);save();$('pursuitDlg').close();render()}}
 function openNote(type,id){let s=type==='task'?ts(id):ps(id);$('noteType').value=type;$('noteId').value=id;$('noteText').value=s.note||'';$('noteDlg').showModal()}
@@ -29,8 +49,33 @@ $('checkForm').onsubmit=e=>{e.preventDefault();let s=cs($('checkId').value);s.co
 function toggleChallenge(id){let s=cs(id);s.done=!s.done;save();render()}
 function finish(id){let c=data.challenges.find(x=>x.id===id);$('finishId').value=id;$('finishText').value=c.final||'';$('finishDlg').showModal()}
 $('finishForm').onsubmit=e=>{e.preventDefault();let c=data.challenges.find(x=>x.id===$('finishId').value);c.final=$('finishText').value.trim();c.completed=true;save();$('finishDlg').close();render()}
-function toggleTask(id){let s=ts(id);s.done=!s.done;save();render()}function togglePursuit(id){let s=ps(id);s.done=!s.done;save();render()}
+function toggleTask(id) { let s = ts(id); s.done = !s.done; save(); render() }
+function togglePursuit(id) { let s = ps(id); s.done = !s.done; save(); render() }
+function toggleReminder(id) {
+    let r = data.reminders.find(x => x.id === id);
+    if (!r) return;
+
+    r.completed = true;
+    r.completedDate = todayKey();
+
+    day().reminders ??= {};
+    day().reminders[id] = { done: true };
+
+    save();
+    render();
+}
+function cleanCompletedReminders() {
+    const today = todayKey();
+
+    data.reminders = data.reminders.filter(r => {
+        if (!r.completed) return true;
+        return r.completedDate === today;
+    });
+
+    save();
+}
 $('addTask').onclick=()=>openTask();$('quickTask').onclick=()=>openTask();$('addPursuit').onclick=()=>openPursuit();$('quickPursuit').onclick=()=>openPursuit();$('addChallenge').onclick=()=>openChallenge();
 document.querySelectorAll('.close').forEach(b=>b.onclick=()=>b.closest('dialog').close());$('prev').onclick=()=>{let d=D(hist);d.setDate(d.getDate()-1);hist=key(d);render()};$('next').onclick=()=>{let d=D(hist);d.setDate(d.getDate()+1);hist=key(d);render()};$('historyDate').onchange=e=>{hist=e.target.value;render()}
 function history(){ $('historyTitle').textContent=dateText(hist);$('historyDate').value=hist;let r=data.days[hist];if(!r){$('historyContent').innerHTML='<div class="empty">No activity recorded for '+esc(dateText(hist))+'.</div>';return}let a=tasks().map(t=>{let s=r.tasks?.[t.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(t.name)+'<div class="historyNote">'+tt(t.start)+' — '+tt(t.end)+(t.details?'\n'+esc(t.details):'')+(s.note?'\nNote: '+esc(s.note):'')+'</div></div>'}).join(''),p=data.pursuits.map(x=>{let s=r.pursuits?.[x.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.note?'<div class="historyNote">Note: '+esc(s.note)+'</div>':'')+'</div>'}).join(''),c=data.challenges.filter(x=>r.challenges?.[x.id]).map(x=>{let s=r.challenges[x.id];return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.comment?'<div class="historyNote">'+esc(s.comment)+'</div>':'')+'</div>'}).join('');$('historyContent').innerHTML='<div class="historyBlock"><small>SCHEDULED TASKS</small>'+a+'</div><div class="historyBlock"><small>DAILY PURSUITS</small>'+p+'</div><div class="historyBlock"><small>PERSONAL CHALLENGES</small>'+c+'</div>'}
-render();setInterval(()=>{render()},30000);
+cleanCompletedReminders();
+render(); setInterval(() => { render() }, 30000);
