@@ -73,7 +73,33 @@
             <div class="actions"><button type="button" class="danger hidden" id="delChallenge">Delete</button><span></span><button type="button" class="close">Cancel</button><button>Save</button></div>
         </form>
     </dialog>
+    <section id="reminders" class="page">
+  <div class="head">
+    <div><small>REMINDERS</small><h2>Your lists</h2></div>
+  </div>
+  <p class="intro">Manage your todos, groceries, and ideas in one place.</p>
 
+  <!-- TODO -->
+  <div class="head gap" style="margin-top:20px;">
+    <div><small>TODO</small><h2>Tasks to do</h2></div>
+    <button id="addTodo">+ Add todo</button>
+  </div>
+  <div id="todoList"></div>
+
+  <!-- GROCERIES -->
+  <div class="head gap">
+    <div><small>GROCERIES</small><h2>Items to buy</h2></div>
+    <button id="addGrocery">+ Add grocery</button>
+  </div>
+  <div id="groceryList"></div>
+
+  <!-- IDEAS -->
+  <div class="head gap">
+    <div><small>IDEAS</small><h2>Things to explore</h2></div>
+    <button id="addIdea">+ Add idea</button>
+  </div>
+  <div id="ideaList"></div>
+</section>
     <dialog id="checkDlg">
         <form id="checkForm">
             <h2 id="checkTitle"></h2><input type="hidden" id="checkId">
