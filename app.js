@@ -37,7 +37,11 @@ document.querySelectorAll('.todayToggle').forEach(b=>b.onclick=()=>{let content=
 function archiveCompletedReminders(){let before=data.reminders.length;data.reminders=data.reminders.filter(r=>!r.completedOn||r.completedOn>=todayKey());if(data.reminders.length!==before)save()}
 function render() { 
   archiveCompletedReminders();
-  $('headerDate').textContent = dateText(todayKey());
+ const now = new Date();
+const fullDateStr = now.getFullYear() + '-' + 
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' + 
+                    String(now.getDate()).padStart(2, '0');
+$('headerDate').textContent = dateText(fullDateStr);
   today();
   schedule();
   pursuits();
