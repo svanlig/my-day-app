@@ -8,6 +8,8 @@ let calendarView = new Date();
 calendarView.setDate(1); // First of current month
 let hist=todayKey(),pastOpen={},scheduleOpen={};
 let audioCtx=null;
+function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext);if(audioCtx.state==='suspended')audioCtx.resume();}
+function playSound(){if(!audioCtx)return;try{let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g),g.connect(audioCtx.destination),g.gain.value=.1,o.frequency.value=800,o.start(),g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.1),o.stop(audioCtx.currentTime+.1)}catch(e){}}
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function todayKey(){return key(new Date())}
 function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
