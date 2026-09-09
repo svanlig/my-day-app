@@ -24,17 +24,8 @@ function ts(id,k=todayKey()){let x=day(k);x.tasks[id]??={done:false,note:''};ret
 function ps(id,k=todayKey()){let x=day(k);x.pursuits[id]??={done:false,note:''};return x.pursuits[id]}
 function cs(id,k=todayKey()){let x=day(k);x.challenges[id]??={done:false,comment:''};return x.challenges[id]}
 function tasks(){return data.tasks.filter(x=>x.daily!==false).sort((a,b)=>a.start.localeCompare(b.start))}
-document.querySelectorAll('nav button').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('.page').forEach(x => x.classList.toggle('active', x.id === b.dataset.page));
-    document.querySelectorAll('nav button').forEach(x => x.classList.toggle('active', x === b));
-    if (b.dataset.page === 'calendar') {
-      renderCalendar();
-    } else {
-      render();
-    }
-  }
-});function weekday(k){return (D(k).getDay()+6)%7}
+document.querySelectorAll('nav button').forEach(b=>{b.onclick=()=>{initAudio();document.querySelectorAll('.page').forEach(x=>x.classList.toggle('active',x.id===b.dataset.page));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===b));if(b.dataset.page==='calendar'){renderCalendar()}else{render()}}});
+function weekday(k){return (D(k).getDay()+6)%7}
 function migrateSchedule(){let changed=false;data.tasks.forEach(t=>{if(!t.schedule){t.schedule={type:t.daily===false?'unscheduled':'daily'};changed=true}});if(changed)save()}function taskForDate(k){let w=weekday(k),items=[];data.tasks.forEach(t=>{let s=t.schedule||{};if(s.type==='daily'){let o=data.taskOverrides[t.id]?.[w];if(!o?.deleted)items.push(o?{...t,...o,parentId:t.id,weekday:w}:{...t,parentId:t.id,weekday:w})}else if(s.type==='weekday'&&+s.weekday===w)items.push({...t,weekday:w});else if(s.type==='once'&&s.date===k)items.push({...t,weekday:w})});return items.sort((a,b)=>a.start.localeCompare(b.start))}function tasks(k=todayKey()){return taskForDate(k)}migrateSchedule();
 document.querySelectorAll('.todayToggle').forEach(b=>b.onclick=()=>{let content=$(b.dataset.target),minimized=content.classList.toggle('hidden');b.textContent=minimized?'＋':'−';b.setAttribute('aria-expanded',String(!minimized));b.setAttribute('aria-label',(minimized?'Maximize ':'Minimize ')+b.closest('.head').querySelector('h2').textContent)});
 function archiveCompletedReminders(){let before=data.reminders.length;data.reminders=data.reminders.filter(r=>!r.completedOn||r.completedOn>=todayKey());if(data.reminders.length!==before)save()}
