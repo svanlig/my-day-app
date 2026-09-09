@@ -7,6 +7,7 @@ data.challengeJournals??={};data.exportedChallengeYears??={};data.taskOverrides?
 let calendarView = new Date();
 calendarView.setDate(1); // First of current month
 let hist=todayKey(),pastOpen={},scheduleOpen={};
+let audioCtx=null;
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function todayKey(){return key(new Date())}
 function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
