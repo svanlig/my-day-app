@@ -7,6 +7,7 @@ data.challengeJournals??={};data.exportedChallengeYears??={};data.taskOverrides?
 let calendarView = new Date();
 calendarView.setDate(1); // First of current month
 let hist=todayKey(),pastOpen={},scheduleOpen={};
+let lastNotified=null;
 let audioCtx=null;
 function initAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext);if(audioCtx.state==='suspended')audioCtx.resume();}
 function playSound(){if(!audioCtx)return;try{let o=audioCtx.createOscillator(),g=audioCtx.createGain();o.connect(g),g.connect(audioCtx.destination),g.gain.value=.1,o.frequency.value=800,o.start(),g.gain.exponentialRampToValueAtTime(.001,audioCtx.currentTime+.1),o.stop(audioCtx.currentTime+.1)}catch(e){}}
