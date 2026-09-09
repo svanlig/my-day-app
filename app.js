@@ -29,6 +29,7 @@ document.querySelectorAll('nav button').forEach(b=>{b.onclick=()=>{initAudio();d
 function weekday(k){return (D(k).getDay()+6)%7}
 function migrateSchedule(){let changed=false;data.tasks.forEach(t=>{if(!t.schedule){t.schedule={type:t.daily===false?'unscheduled':'daily'};changed=true}});if(changed)save()}function taskForDate(k){let w=weekday(k),items=[];data.tasks.forEach(t=>{let s=t.schedule||{};if(s.type==='daily'){let o=data.taskOverrides[t.id]?.[w];if(!o?.deleted)items.push(o?{...t,...o,parentId:t.id,weekday:w}:{...t,parentId:t.id,weekday:w})}else if(s.type==='weekday'&&+s.weekday===w)items.push({...t,weekday:w});else if(s.type==='once'&&s.date===k)items.push({...t,weekday:w})});return items.sort((a,b)=>a.start.localeCompare(b.start))}function tasks(k=todayKey()){return taskForDate(k)}migrateSchedule();
 document.querySelectorAll('.todayToggle').forEach(b=>b.onclick=()=>{let content=$(b.dataset.target),minimized=content.classList.toggle('hidden');b.textContent=minimized?'＋':'−';b.setAttribute('aria-expanded',String(!minimized));b.setAttribute('aria-label',(minimized?'Maximize ':'Minimize ')+b.closest('.head').querySelector('h2').textContent)});
+document.onclick=()=>{if(audioCtx&&audioCtx.state==='suspended')audioCtx.resume()};
 function archiveCompletedReminders(){let before=data.reminders.length;data.reminders=data.reminders.filter(r=>!r.completedOn||r.completedOn>=todayKey());if(data.reminders.length!==before)save()}
 function render() { 
   archiveCompletedReminders();
