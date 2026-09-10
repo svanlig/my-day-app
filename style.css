@@ -265,4 +265,47 @@ html{background:#fff}body{background:#fff}.app{max-width:900px;margin:auto;paddi
     padding: 0.2rem 0.6rem;
   }
 }
+/* Three-dot menu + overflow menu */
+.menuWrap { position: relative; margin-left: auto; }
+.menuBtn {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 22px; line-height: 1; padding: 4px 10px;
+  color: inherit; border-radius: 8px;
+}
+.menuBtn:hover { background: rgba(0,0,0,0.06); }
+.menuDropdown {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 50;
+  min-width: 200px; background: #fff; border: 1px solid #e2e2e2;
+  border-radius: 10px; box-shadow: 0 6px 24px rgba(0,0,0,0.12);
+  padding: 6px; text-align: left;
+}
+.menuDropdown.hidden { display: none; }
+.menuItem {
+  display: block; width: 100%; text-align: left; background: transparent;
+  border: none; cursor: pointer; padding: 10px 12px; border-radius: 8px;
+  font-size: 15px; color: inherit;
+}
+.menuItem:hover { background: rgba(0,0,0,0.05); }
+.menuDivider { height: 1px; background: #eee; margin: 4px 6px; }
 
+/* Backup/Restore modal */
+.brModal { border: none; border-radius: 14px; padding: 0; max-width: 420px; width: 92%; }
+.brModal::backdrop { background: rgba(0,0,0,0.35); }
+.brBody { padding: 20px 22px 22px; }
+.brHead { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.brHead h2 { margin: 0; font-size: 19px; }
+.brClose {
+  background: transparent; border: none; cursor: pointer;
+  font-size: 22px; line-height: 1; color: #888; padding: 0 4px;
+}
+.brSub { color: #777; font-size: 13px; margin: 0 0 18px; }
+.brAction {
+  display: flex; align-items: flex-start; gap: 12px; width: 100%;
+  text-align: left; background: #fafafa; border: 1px solid #eee;
+  border-radius: 12px; padding: 14px; cursor: pointer; margin-bottom: 12px;
+}
+.brAction:hover { background: #f2f2f2; }
+.brAction:last-child { margin-bottom: 0; }
+.brIcon { font-size: 22px; line-height: 1; }
+.brActionText b { display: block; font-size: 15px; margin-bottom: 2px; }
+.brActionText span { color: #777; font-size: 13px; }
