@@ -9,7 +9,12 @@
 <link rel="stylesheet" href="style.css">
 </head><body>
 <div class="app">
-<header><b>MY DAY</b><span id="headerDate"></span></header>
+<header><b>MY DAY</b><span id="headerDate"></span><div class="menuWrap">
+  <button class="menuBtn" id="menuBtn" aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+  <div class="menuDropdown hidden" id="menuDropdown" role="menu">
+    <button class="menuItem" id="menuBackupRestore" role="menuitem">Backup &amp; Restore</button>
+  </div>
+</div></header>
 <nav>
 <button data-page="today">Today</button>
 <button data-page="schedule">Schedule</button>
