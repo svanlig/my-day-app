@@ -305,4 +305,111 @@ $('calendarNext').onclick = () => {
   renderCalendar();
 };
 function history(){ $('historyTitle').textContent=dateText(hist);$('historyDate').value=hist;let r=data.days[hist];if(!r){$('historyContent').innerHTML='<div class="empty">No activity recorded for '+esc(dateText(hist))+'.</div>';return}let a=tasks(hist).map(t=>{let s=r.tasks?.[t.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(t.name)+'<div class="historyNote">'+tt(t.start)+' — '+tt(t.end)+(t.details?'\n'+esc(t.details):'')+(s.note?'\nNote: '+esc(s.note):'')+'</div></div>'}).join(''),p=data.pursuits.map(x=>{let s=r.pursuits?.[x.id]||{};return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.note?'<div class="historyNote">Note: '+esc(s.note)+'</div>':'')+'</div>'}).join(''),c=data.challenges.filter(x=>r.challenges?.[x.id]).map(x=>{let s=r.challenges[x.id];return '<div class="historyItem">'+(s.done?'✓':'○')+' '+esc(x.name)+(s.comment?'<div class="historyNote">'+esc(s.comment)+'</div>':'')+'</div>'}).join(''),m=(r.reminders||[]).map(x=>'<div class="historyItem">✓ '+esc(x.name)+'<div class="historyNote">'+esc({todo:'To Do',buy:'To Buy',ideas:'Ideas'}[x.category]||'Reminders')+'</div></div>').join('');$('historyContent').innerHTML='<div class="historyBlock"><small>SCHEDULED TASKS</small>'+a+'</div><div class="historyBlock"><small>DAILY PURSUITS</small>'+p+'</div><div class="historyBlock"><small>PERSONAL CHALLENGES</small>'+c+'</div><div class="historyBlock"><small>REMINDERS COMPLETED</small>'+m+'</div>'}
+// ==================== BACKUP & RESTORE ====================
+
+function backupData() {
+  const today = new Date();
+  const stamp = today.getFullYear() + '-' +
+    String(today.getMonth() + 1).padStart(2, '0') + '-' +
+    String(today.getDate()).padStart(2, '0');
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'my-day-backup-' + stamp + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function restoreData(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    let parsed;
+    try {
+      parsed = JSON.parse(e.target.result);
+    } catch (err) {
+      alert('That file is not valid JSON. Restore cancelled.');
+      return;
+    }
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      alert('That file does not look like a My Day backup. Restore cancelled.');
+      return;
+    }
+    if (!confirm('Restore this backup? Your current app data will be replaced. This cannot be undone.')) return;
+
+    data = parsed;
+    data.tasks ??= [];
+    data.pursuits ??= [];
+    data.challenges ??= [];
+    data.reminders ??= [];
+    data.days ??= {};
+    data.calendarEvents ??= {};
+    data.challengeJournals ??= {};
+    data.exportedChallengeYears ??= {};
+    data.taskOverrides ??= {};
+
+    save();
+    render();
+    if (document.getElementById('calendar')?.classList.contains('active')) {
+      renderCalendar();
+    }
+    alert('Backup restored.');
+  };
+  reader.onerror = () => alert('Could not read that file. Restore cancelled.');
+  reader.readAsText(file);
+}
+
+// ---------- Menu wiring ----------
+(function () {
+  const menuBtn = document.getElementById('menuBtn');
+  const menuDropdown = document.getElementById('menuDropdown');
+  const brDlg = document.getElementById('brDlg');
+
+  function closeMenu() {
+    menuDropdown.classList.add('hidden');
+    menuBtn.setAttribute('aria-expanded', 'false');
+  }
+
+  menuBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    const willOpen = menuDropdown.classList.contains('hidden');
+    menuDropdown.classList.toggle('hidden', !willOpen);
+    menuBtn.setAttribute('aria-expanded', String(willOpen));
+  });
+
+  document.addEventListener('click', e => {
+    if (!menuDropdown.classList.contains('hidden') &&
+        !menuDropdown.contains(e.target) && e.target !== menuBtn) {
+      closeMenu();
+    }
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeMenu();
+  });
+
+  document.getElementById('menuBackupRestore').addEventListener('click', () => {
+    closeMenu();
+    brDlg.showModal();
+  });
+
+  document.getElementById('brClose').addEventListener('click', () => brDlg.close());
+
+  brDlg.addEventListener('click', e => {
+    if (e.target === brDlg) brDlg.close();
+  });
+})();
+
+// ---------- Backup & Restore actions ----------
+document.getElementById('backupBtn').onclick = backupData;
+document.getElementById('restoreBtn').onclick = () => document.getElementById('restoreFile').click();
+document.getElementById('restoreFile').onchange = e => {
+  restoreData(e.target.files[0]);
+  e.target.value = '';
+};
+
+// ==================== END BACKUP & RESTORE ====================
+
 render();setInterval(()=>{render()},30000);
