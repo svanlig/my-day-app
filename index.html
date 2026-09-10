@@ -100,5 +100,32 @@
 <dialog id="reportDlg"><form id="reportForm"><h2 id="reportTitle">Yearly challenge report</h2><input type="hidden" id="reportYear">
 <p class="intro" id="reportSummary"></p><label>Your reflection<textarea id="reportJournal" placeholder="What did this year of challenges teach you?"></textarea></label>
 <div class="actions"><span></span><button type="button" class="danger hidden" id="deleteYear">Delete year's history</button><button type="button" class="close">Cancel</button><button>Export PDF</button></div></form></dialog>
+<dialog class="brModal" id="brDlg">
+  <div class="brBody">
+    <div class="brHead">
+      <h2>Backup &amp; Restore</h2>
+      <button class="brClose" id="brClose" aria-label="Close">×</button>
+    </div>
+    <p class="brSub">Save all of your My Day data to a file, or restore from a previous backup.</p>
+
+    <button class="brAction" id="backupBtn">
+      <span class="brIcon">⬇️</span>
+      <span class="brActionText">
+        <b>Backup Data</b>
+        <span>Download a JSON file with all tasks, challenges, history, reminders, and calendar events.</span>
+      </span>
+    </button>
+
+    <button class="brAction" id="restoreBtn">
+      <span class="brIcon">⬆️</span>
+      <span class="brActionText">
+        <b>Restore Data</b>
+        <span>Choose a My Day backup file to replace your current app data.</span>
+      </span>
+    </button>
+
+    <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+  </div>
+</dialog>
 <script src="app.js"></script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script></body></html>
