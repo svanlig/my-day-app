@@ -9,7 +9,7 @@ calendarView.setDate(1); // First of current month
 let hist=todayKey(),pastOpen={},scheduleOpen={};
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
 function todayKey(){return key(new Date())}
-function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function key(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function D(k){return new Date(k+'T12:00:00')}
 function dateText(k){return new Intl.DateTimeFormat(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}).format(D(k))}
 function short(k){return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(D(k))}
