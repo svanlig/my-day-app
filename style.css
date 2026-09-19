@@ -309,3 +309,33 @@ html{background:#fff}body{background:#fff}.app{max-width:900px;margin:auto;paddi
 .brIcon { font-size: 22px; line-height: 1; }
 .brActionText b { display: block; font-size: 15px; margin-bottom: 2px; }
 .brActionText span { color: #777; font-size: 13px; }
+/* Reminders — consistent vertical rhythm across the three sections */
+#reminders .reminderAdd {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #111;
+  padding: 0 0 9px;
+  margin: 35px 0 0;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: .02em;
+  color: #111;
+  cursor: pointer;
+}
+#reminders .reminderAdd:first-of-type {
+  margin-top: 24px;
+}
+#remindersTodo,
+#remindersBuy,
+#remindersIdeas {
+  padding: 6px 0 30px;
+  border-bottom: 3px solid #111;
+}
+#remindersIdeas {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
