@@ -9,32 +9,60 @@
 <link rel="stylesheet" href="style.css">
 </head><body>
 <div class="app">
-<header><b>MY DAY</b><span id="headerDate"></span></header>
+<header><b>MY DAY</b><span id="headerDate"></span><div class="menuWrap">
+  <button class="menuBtn" id="menuBtn" aria-label="More options" aria-haspopup="true" aria-expanded="false">⋮</button>
+  <div class="menuDropdown hidden" id="menuDropdown" role="menu">
+    <button class="menuItem" id="menuBackupRestore" role="menuitem">Backup &amp; Restore</button>
+  </div>
+</div></header>
 <nav>
-<button data-page="today">Today</button><button data-page="schedule">Schedule</button>
-<button data-page="pursuits">Daily Pursuits</button><button data-page="challenges">Personal Challenges</button><button data-page="history">History</button>
+<button data-page="today" class="active">Today</button>
+<button data-page="schedule">Schedule</button>
+<button data-page="pursuits">Daily Pursuits</button>
+<button data-page="challenges">Personal Challenges</button>
+<button data-page="reminders">Reminders</button>
+<!-- Add to nav in index.html -->
+<button data-page="calendar">Calendar</button>
+<button data-page="history">History</button>
 </nav>
 <main>
-<section id="today" class="page">
+<section id="today" class="page active">
 <div class="current"><small>CURRENT TASK</small><div id="current"></div></div>
-<div class="head"><div><small>TODAY</small><h2>Scheduled Tasks</h2></div><button id="quickTask">+ Task</button></div><div id="todayTasks"></div>
-<div class="head gap"><div><small>DAILY PURSUITS</small><h2>If I have time</h2></div><button id="quickPursuit">+ Pursuit</button></div><div id="todayPursuits"></div>
-<div class="head gap"><div><small>PERSONAL CHALLENGES</small><h2>Today's challenges</h2></div></div><div id="todayChallenges"></div>
+<div class="head"><div><small>TODAY</small><h2>Scheduled Tasks</h2></div><button class="todayToggle" data-target="todayTasks" aria-expanded="true" aria-label="Minimize Scheduled Tasks">−</button></div><div id="todayTasks"></div>
+<div class="head gap"><div><small>DAILY PURSUITS</small><h2>If I have time</h2></div><button class="todayToggle" data-target="todayPursuits" aria-expanded="true" aria-label="Minimize Daily Pursuits">−</button></div><div id="todayPursuits"></div>
+<div class="head gap"><div><small>PERSONAL CHALLENGES</small><h2>Today's challenges</h2></div><button class="todayToggle" data-target="todayChallenges" aria-expanded="true" aria-label="Minimize Personal Challenges">−</button></div><div id="todayChallenges"></div>
 </section>
-<section id="schedule" class="page"><div class="head"><div><small>SCHEDULE</small><h2>Your daily schedule</h2></div><button id="addTask">+ Add task</button></div><p class="intro">Scheduled things happen at a particular time. Add details when you need extra instructions.</p><div id="scheduleList"></div></section>
+<section id="schedule" class="page"><div class="head"><div><small>SCHEDULE</small><h2>Your weekly schedule</h2></div><button id="addTask">+ Add task</button></div><p class="intro">Add items for every day, a specific weekday, or one exact date.</p><div id="scheduleList"></div></section>
 <section id="pursuits" class="page"><div class="head"><div><small>DAILY PURSUITS</small><h2>Things I aim to do</h2></div><button id="addPursuit">+ Add pursuit</button></div><p class="intro">Productive things you want to do when you have spare time, separate from chores and scheduled tasks.</p><div id="pursuitList"></div></section>
-<section id="challenges" class="page"><div class="head"><div><small>PERSONAL CHALLENGES</small><h2>Challenges</h2></div><button id="addChallenge">+ Add challenge</button></div><p class="intro">Set a beginning and end, check in each day, add comments, and record your final accomplishment.</p><div id="activeChallenges"></div><div class="sub">COMPLETED CHALLENGES</div><div id="completedChallenges"></div></section>
+<section id="challenges" class="page"><div class="head"><div><small>PERSONAL CHALLENGES</small><h2>Challenges</h2></div><button id="addChallenge">+ Add challenge</button></div><p class="intro">Set a beginning and end, check in each day, add comments, and record your final accomplishment.</p><div id="activeChallenges"></div><div class="sub">PAST CHALLENGES</div><div id="pastChallenges"></div></section>
+<section id="reminders" class="page"><div class="head"><div><small>REMINDERS</small><h2>Keep track of what matters</h2></div></div><p class="intro">Uncompleted reminders stay here until you finish them. Completed reminders are saved in History for today.</p><div class="reminderSectionHead"><button class="reminderAdd" data-category="todo">+ Add To Do</button><div id="remindersTodo"></div><button class="reminderAdd" data-category="buy">+ Add To Buy</button><div id="remindersBuy"></div><button class="reminderAdd" data-category="ideas">+ Add Ideas</button><div id="remindersIdeas"></div></section>
+<!-- Add new section in main -->
+<section id="calendar" class="page">
+  <div class="head">
+    <div><small>CALENDAR</small><h2 id="calendarMonth"></h2></div>
+    <div>
+      <button id="calendarPrev">←</button>
+      <button id="calendarNext">→</button>
+    </div>
+  </div>
+  <div id="calendarGrid"></div>
+  <div id="calendarEvents"></div>
+</section>
 <section id="history" class="page"><div class="head"><div><small>HISTORY</small><h2 id="historyTitle"></h2></div><div><button id="prev">←</button><button id="next">→</button></div></div><div class="picker">Go to date <input type="date" id="historyDate"></div><div id="historyContent"></div></section>
 </main></div>
 
-<dialog id="taskDlg"><form id="taskForm"><h2 id="taskTitle">Add task</h2><input type="hidden" id="taskId">
+<dialog id="taskDlg"><form id="taskForm"><h2 id="taskTitle">Add task</h2><input type="hidden" id="taskId"><input type="hidden" id="taskEditWeekday">
 <label>Task name<input id="taskName" required></label><div class="two"><label>Start<input id="taskStart" type="time" required></label><label>End<input id="taskEnd" type="time" required></label></div>
-<label>Details / description<textarea id="taskDetails"></textarea></label><label class="check"><input id="taskDaily" type="checkbox" checked> Repeat every day</label>
+<label>Details / description<textarea id="taskDetails"></textarea></label><label id="taskTypeField">Recurrence<select id="taskType"><option value="daily">Every day</option><option value="weekday">Specific weekday</option><option value="once">One time</option></select></label><label id="taskWeekdayField" class="hidden">Weekday<select id="taskWeekday"><option value="0">Monday</option><option value="1">Tuesday</option><option value="2">Wednesday</option><option value="3">Thursday</option><option value="4">Friday</option><option value="5">Saturday</option><option value="6">Sunday</option></select></label><label id="taskDateField" class="hidden">Date<input id="taskDate" type="date"></label>
 <div class="actions"><button type="button" class="danger hidden" id="delTask">Delete</button><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
 
 <dialog id="pursuitDlg"><form id="pursuitForm"><h2 id="pursuitTitle">Add pursuit</h2><input type="hidden" id="pursuitId">
 <label>Pursuit<input id="pursuitName" required></label><label>Details / description<textarea id="pursuitDetails"></textarea></label>
 <div class="actions"><button type="button" class="danger hidden" id="delPursuit">Delete</button><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
+
+<dialog id="reminderDlg"><form id="reminderForm"><h2 id="reminderTitle">Add reminder</h2><input type="hidden" id="reminderId">
+<label>Reminder<input id="reminderName" required></label><label>Section<select id="reminderCategory"><option value="todo">To Do</option><option value="buy">To Buy</option><option value="ideas">Ideas</option></select></label>
+<div class="actions"><span></span><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
 
 <dialog id="noteDlg"><form id="noteForm"><h2 id="noteTitle">Note</h2><input type="hidden" id="noteType"><input type="hidden" id="noteId">
 <label>Note<textarea id="noteText"></textarea></label><div class="actions"><span></span><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
@@ -48,9 +76,56 @@
 <dialog id="checkDlg"><form id="checkForm"><h2 id="checkTitle"></h2><input type="hidden" id="checkId">
 <label>Today's accomplishment / comment<textarea id="checkComment" placeholder="1,243 words today..."></textarea></label><label class="check"><input type="checkbox" id="checkDone"> Completed today's target</label>
 <div class="actions"><span></span><span></span><button type="button" class="close">Cancel</button><button>Save</button></div></form></dialog>
-
+<!-- Add dialog for events -->
+<dialog id="calendarEventDlg">
+  <form id="calendarEventForm">
+    <h2 id="calendarEventTitle">Add Event</h2>
+    <input type="hidden" id="calendarEventId">
+    <input type="hidden" id="calendarEventDate">
+    <label>Event title <input id="calendarEventName" required></label>
+    <label>Time <input id="calendarEventTime" type="time"></label>
+    <label>Note <textarea id="calendarEventNote"></textarea></label>
+    <div class="actions">
+      <button type="button" class="danger hidden" id="delCalendarEvent">Delete</button>
+      <span></span>
+      <button type="button" class="close">Cancel</button>
+      <button>Save</button>
+    </div>
+  </form>
+</dialog>
 <dialog id="finishDlg"><form id="finishForm"><h2>Final accomplishment</h2><input type="hidden" id="finishId">
 <label>What did you accomplish?<textarea id="finishText" placeholder="Wrote 30,000 words over 30 days..."></textarea></label>
 <div class="actions"><span></span><span></span><button type="button" class="close">Cancel</button><button>Save result</button></div></form></dialog>
+
+<dialog id="reportDlg"><form id="reportForm"><h2 id="reportTitle">Yearly challenge report</h2><input type="hidden" id="reportYear">
+<p class="intro" id="reportSummary"></p><label>Your reflection<textarea id="reportJournal" placeholder="What did this year of challenges teach you?"></textarea></label>
+<div class="actions"><span></span><button type="button" class="danger hidden" id="deleteYear">Delete year's history</button><button type="button" class="close">Cancel</button><button>Export PDF</button></div></form></dialog>
+<dialog class="brModal" id="brDlg">
+  <div class="brBody">
+    <div class="brHead">
+      <h2>Backup &amp; Restore</h2>
+      <button class="brClose" id="brClose" aria-label="Close">×</button>
+    </div>
+    <p class="brSub">Save all of your My Day data to a file, or restore from a previous backup.</p>
+
+    <button class="brAction" id="backupBtn">
+      <span class="brIcon">⬇️</span>
+      <span class="brActionText">
+        <b>Backup Data</b>
+        <span>Download a JSON file with all tasks, challenges, history, reminders, and calendar events.</span>
+      </span>
+    </button>
+
+    <button class="brAction" id="restoreBtn">
+      <span class="brIcon">⬆️</span>
+      <span class="brActionText">
+        <b>Restore Data</b>
+        <span>Choose a My Day backup file to replace your current app data.</span>
+      </span>
+    </button>
+
+    <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+  </div>
+</dialog>
 <script src="app.js"></script>
 <script>if("serviceWorker" in navigator){navigator.serviceWorker.register("sw.js").catch(()=>{});}</script></body></html>
